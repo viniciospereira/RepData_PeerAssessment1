@@ -1,9 +1,4 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 ## Loading and preprocessing the data
@@ -12,14 +7,40 @@ In this section I am showing any code that is needed to:
 
 1. Load the data (i.e. `read.csv()`)
 
-```{r}
+
+```r
 activity <- read.csv(unz("activity.zip", "activity.csv"), header = TRUE, stringsAsFactors = FALSE, na.strings = "NA")
 ```
 
 2. Process/transform the data (if necessary) into a format suitable for your analysis
 
-```{r}
+
+```r
 require(dplyr)
+```
+
+```
+## Loading required package: dplyr
+```
+
+```
+## 
+## Attaching package: 'dplyr'
+```
+
+```
+## The following objects are masked from 'package:stats':
+## 
+##     filter, lag
+```
+
+```
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
+```
+
+```r
 activity <- mutate(activity, date = as.Date(date))
 ```
 
@@ -30,14 +51,16 @@ For this part of the assignment, I am ignoring the missing values in the dataset
 
 1. I am calculating the total number of steps taken per day.
 
-```{r}
+
+```r
 activityByDay <- group_by(activity, date)
 stepsPerDay <- summarise(activityByDay, total = sum(steps, na.rm = TRUE))
 ```
 
 2. I am making a histogram of the total number of steps taken each day.
 
-```{r}
+
+```r
 library(ggplot2)
 histStepsPerDay <- ggplot(data = stepsPerDay, aes(x = total)) + 
      geom_histogram(col = "white", fill = "blue", binwidth = 700) +
@@ -46,10 +69,18 @@ histStepsPerDay <- ggplot(data = stepsPerDay, aes(x = total)) +
 print(histStepsPerDay)
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
+
 3. I am calculating and reporting the mean and median of the total number of steps taken per day.
 
-```{r}
+
+```r
 summary(stepsPerDay$total)
+```
+
+```
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##       0    6778   10395    9354   12811   21194
 ```
 
 
@@ -57,7 +88,8 @@ summary(stepsPerDay$total)
 
 1. I am making a time series plot (i.e. `type = "l"`) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
 
-```{r}
+
+```r
 activityByInterval <- group_by(activity, interval)
 meanStepsPerInterval <- summarise(activityByInterval, mean = mean(steps, na.rm = TRUE))
 pMeanStepsPerInterval <- ggplot(data = meanStepsPerInterval, aes(x = interval, y = mean)) + 
@@ -68,10 +100,20 @@ pMeanStepsPerInterval <- ggplot(data = meanStepsPerInterval, aes(x = interval, y
 print(pMeanStepsPerInterval)
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
+
 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
-```{r}
+
+```r
 meanStepsPerInterval[meanStepsPerInterval$mean == max(meanStepsPerInterval$mean), 1]
+```
+
+```
+## # A tibble: 1 x 1
+##   interval
+##      <int>
+## 1      835
 ```
 
 
@@ -81,15 +123,24 @@ Note that there are a number of days/intervals where there are missing values (c
 
 1. I am calculating and report the total number of missing values in the dataset (i.e. the total number of rows with `NA`s)
 
-```{r}
+
+```r
 count(activity[is.na(activity$steps),])
+```
+
+```
+## # A tibble: 1 x 1
+##       n
+##   <int>
+## 1  2304
 ```
 
 2. As a strategy for filling in all of the missing values in the dataset I am using the mean for tthe 5-minute interval.
 
 3. I am creating a new dataset that is equal to the original dataset but with the missing data filled in.
 
-```{r}
+
+```r
 activityNoNa <- activity
 for (i in 1:nrow(activityNoNa)){
      if(is.na(activityNoNa[i, "steps"])){
@@ -97,12 +148,12 @@ for (i in 1:nrow(activityNoNa)){
                meanStepsPerInterval[meanStepsPerInterval$interval == activityNoNa[i, "interval"], "mean"]
      }
 }
-
 ```
 
 4. I am makig a histogram of the total number of steps taken each day and calculating and reporting the **mean** and **median** total number of steps taken per day.
 
-```{r}
+
+```r
 activityByDayNoNa <- group_by(activityNoNa, date)
 stepsPerDayNoNa <- summarise(activityByDayNoNa, total = sum(steps))
 histStepsPerDayNoNa <- ggplot(data = stepsPerDayNoNa, aes(x = total)) + 
@@ -110,12 +161,46 @@ histStepsPerDayNoNa <- ggplot(data = stepsPerDayNoNa, aes(x = total)) +
      labs(title = "Histogram of the total number of steps taken each day with no NAs") +
      labs(x = "total steps per day")
 require(gridExtra)
+```
+
+```
+## Loading required package: gridExtra
+```
+
+```
+## 
+## Attaching package: 'gridExtra'
+```
+
+```
+## The following object is masked from 'package:dplyr':
+## 
+##     combine
+```
+
+```r
 grid.arrange(histStepsPerDay, histStepsPerDayNoNa, ncol = 1)
 ```
 
-```{r}
+![](PA1_template_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
+
+
+```r
 summary(stepsPerDay$total)
+```
+
+```
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##       0    6778   10395    9354   12811   21194
+```
+
+```r
 summary(stepsPerDayNoNa$total)
+```
+
+```
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##      41    9819   10766   10766   12811   21194
 ```
 
 As we can see, these values differ from the estimates from the first part of the assignment. By imputing missing data on the estimates of the total daily number of steps we concentrate the highter number of steps in the midle of the day.
@@ -127,7 +212,8 @@ I am using the dataset with the filled-in missing values for this part.
 
 1. I am creating a new factor variable in the dataset with two levels -- "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
 
-```{r}
+
+```r
 typeDay <- function(date) {
     day <- weekdays(date)
     if (day %in% c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")) 
@@ -140,7 +226,8 @@ activityNoNa$typeDay <- as.factor(sapply(activityNoNa$date, FUN = typeDay))
 
 2. I am making a panel plot containing a time series plot (i.e. `type = "l"`) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).
 
-```{r}
+
+```r
 activityByIntervalNoNa <- group_by(activityNoNa, interval, typeDay)
 meanStepsPerIntervalNoNa <- summarise(activityByIntervalNoNa, mean = mean(steps))
 pMeanStepsPerIntervalNoNa <- ggplot(data = meanStepsPerIntervalNoNa, aes(x = interval, y = mean)) + 
@@ -150,3 +237,5 @@ pMeanStepsPerIntervalNoNa <- ggplot(data = meanStepsPerIntervalNoNa, aes(x = int
      facet_grid(typeDay ~ .)
 print(pMeanStepsPerIntervalNoNa)
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-13-1.png)<!-- -->
